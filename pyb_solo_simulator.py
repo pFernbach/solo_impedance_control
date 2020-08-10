@@ -5,10 +5,10 @@ import pybullet_data
 
 from example_robot_data.robots_loader import getModelPath
 
-class pybullet_simulator:
 
-    def __init__(self, dt=0.001, q_init = None, env_name = "plane.urdf", urdf_name = "solo12.urdf", force_control = False):
-        
+class pybullet_simulator:
+    def __init__(self, dt=0.001, q_init=None, env_name="plane.urdf", urdf_name="solo12.urdf", force_control=False):
+
         self.ENV_NAME = env_name
         self.ROBOT_URDF_NAME = urdf_name
         self.URDF_SUBPATH = "/solo_description/robots"
@@ -30,15 +30,15 @@ class pybullet_simulator:
         pyb.setGravity(0, 0, -9.81)
 
         # Load Quadruped robot
-        robotStartPos = [0, 0, 0.235+0.0045]
-        robotStartOrientation = pyb.getQuaternionFromEuler(
-            [0.0, 0.0, 0.0])  # -np.pi/2
+        robotStartPos = [0, 0, 0.235 + 0.0045]
+        robotStartOrientation = pyb.getQuaternionFromEuler([0.0, 0.0, 0.0])  # -np.pi/2
         pyb.setAdditionalSearchPath(getModelPath(self.URDF_SUBPATH) + self.URDF_SUBPATH)
         self.robotId = pyb.loadURDF(self.ROBOT_URDF_NAME, robotStartPos, robotStartOrientation)
 
         # Disable default motor control for revolute joints
         self.revoluteJointIndices = [0, 1, 2, 4, 5, 6, 8, 9, 10, 12, 13, 14]
-        pyb.setJointMotorControlArray(self.robotId, jointIndices=self.revoluteJointIndices,
+        pyb.setJointMotorControlArray(self.robotId,
+                                      jointIndices=self.revoluteJointIndices,
                                       controlMode=pyb.VELOCITY_CONTROL,
                                       targetVelocities=[0.0 for m in self.revoluteJointIndices],
                                       forces=[0.0 for m in self.revoluteJointIndices])
@@ -49,8 +49,10 @@ class pybullet_simulator:
         if force_control:
             # Enable torque control for revolute joints
             jointTorques = [0.0 for m in self.revoluteJointIndices]
-            pyb.setJointMotorControlArray(self.robotId, self.revoluteJointIndices,
-                                          controlMode=pyb.TORQUE_CONTROL, forces=jointTorques)
+            pyb.setJointMotorControlArray(self.robotId,
+                                          self.revoluteJointIndices,
+                                          controlMode=pyb.TORQUE_CONTROL,
+                                          forces=jointTorques)
 
         # Set time step for the simulation
         pyb.setTimeStep(dt)
@@ -67,12 +69,9 @@ class pybullet_simulator:
         """
 
         # Retrieve data from the simulation
-        self.jointStates = pyb.getJointStates(
-            self.robotId, self.revoluteJointIndices)  # State of all joints
-        self.baseState = pyb.getBasePositionAndOrientation(
-            self.robotId)  # Position and orientation of the trunk
-        self.baseVel = pyb.getBaseVelocity(
-            self.robotId)  # Velocity of the trunk
+        self.jointStates = pyb.getJointStates(self.robotId, self.revoluteJointIndices)  # State of all joints
+        self.baseState = pyb.getBasePositionAndOrientation(self.robotId)  # Position and orientation of the trunk
+        self.baseVel = pyb.getBaseVelocity(self.robotId)  # Velocity of the trunk
 
         # Joints configuration and velocity vector for free-flyer + 12 actuators
         self.qmes12 = np.vstack((np.array([self.baseState[0]]).T, np.array([self.baseState[1]]).T,
@@ -81,4 +80,3 @@ class pybullet_simulator:
                                  np.array([[state[1] for state in self.jointStates]]).T))
 
         return 0
-

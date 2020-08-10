@@ -9,15 +9,17 @@ from loop import Loop
 
 DT = 0.002
 
+
 def camera_follow(root):
     state = pyb.getDebugVisualizerCamera()
     current_root = state[-1]
     x = max(current_root[0], root[0])
     y = current_root[1]
     z = current_root[2]
-    pyb.resetDebugVisualizerCamera(cameraDistance=state[-2], cameraYaw=state[-4], cameraPitch=state[-3],
+    pyb.resetDebugVisualizerCamera(cameraDistance=state[-2],
+                                   cameraYaw=state[-4],
+                                   cameraPitch=state[-3],
                                    cameraTargetPosition=[x, y, z])
-
 
 
 class SimulatorLoop(Loop):
@@ -49,19 +51,20 @@ class SimulatorLoop(Loop):
         camera_follow(pyb_sim.baseState[0])
 
         # Set control for all joints
-        pyb.setJointMotorControlArray(pyb_sim.robotId, pyb_sim.revoluteJointIndices,
+        pyb.setJointMotorControlArray(pyb_sim.robotId,
+                                      pyb_sim.revoluteJointIndices,
                                       controlMode=pyb.POSITION_CONTROL,
-                                      targetPositions = self.q_t(self.t)[7:],
-                                      targetVelocities = self.dq_t(self.t)[6:])
+                                      targetPositions=self.q_t(self.t)[7:],
+                                      targetVelocities=self.dq_t(self.t)[6:])
 
         # Compute one step of simulation
         pyb.stepSimulation()
 
 
-
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Start simulation for solo from a planned motion")
-    parser.add_argument('filename', type=str, help="the absolute path of a multicontact_api.ContactSequence serialized file")
+    parser.add_argument('filename', type=str,
+                        help="the absolute path of a multicontact_api.ContactSequence serialized file")
     args = parser.parse_args()
     filename = args.filename
 
@@ -93,7 +96,7 @@ if __name__ == "__main__":
     assert tau_t.dim() == 12
 
     # Build the simulator wrapper class:
-    q_init = q_t(t_min)[7:].reshape(-1,1)  # without the freeflyer
+    q_init = q_t(t_min)[7:].reshape(-1, 1)  # without the freeflyer
     root_init = q_t(t_min)[:7]
     pyb_sim = pybullet_simulator(dt=DT, q_init=q_init)
 

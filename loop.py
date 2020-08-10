@@ -3,6 +3,7 @@ from abc import ABCMeta, abstractmethod
 
 ## Code copied from mlp to avoid large dependency. Should be put in smaller package instead
 
+
 class Loop(metaclass=ABCMeta):
     """
     Astract Class to allow users to execute self.loop at a given frequency
