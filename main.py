@@ -104,6 +104,8 @@ if __name__ == "__main__":
     pyb.resetDebugVisualizerCamera(cameraDistance=0.8, cameraYaw=-30, cameraPitch=-35,
                                    cameraTargetPosition=[root_init[0], root_init[1], 0.1])
 
+    print("Press enter to start the motion")
+    input()
     # Start the control loop:
     SimulatorLoop(DT, q_t, dq_t)
 
