@@ -4,10 +4,10 @@ import pybullet as pyb  # Pybullet server
 import pybullet_data
 
 from example_robot_data.robots_loader import getModelPath
-
+from loop import Loop
 
 class pybullet_simulator:
-    def __init__(self, dt=0.001, q_init=None, env_name="plane.urdf", urdf_name="solo12.urdf", force_control=False):
+    def __init__(self, dt=0.001, q_init=None, root_init = None, env_name="plane.urdf", urdf_name="solo12.urdf", force_control=False):
 
         self.ENV_NAME = env_name
         self.ROBOT_URDF_NAME = urdf_name
@@ -64,6 +64,13 @@ class pybullet_simulator:
         self.qmes12 = None
         self.vmes12 = None
 
+        # Change camera position
+        if root_init is not None:
+            pyb.resetDebugVisualizerCamera(cameraDistance=0.8,
+                                         cameraYaw=-30,
+                                         cameraPitch=-35,
+                                         cameraTargetPosition=[root_init[0], root_init[1], 0.1])
+
     def retrieve_pyb_data(self):
         """Retrieve the position and orientation of the base in world frame as well as its linear and angular velocities
         """
@@ -80,3 +87,60 @@ class pybullet_simulator:
                                  np.array([[state[1] for state in self.jointStates]]).T))
 
         return 0
+
+
+class SimulatorLoop(Loop):
+    """
+    Class used to call pybullet at a given frequency
+    """
+    def __init__(self, pyb_sim, period, q_t, dq_t):
+        """
+        Constructor
+        :param pyb_sim: instance of pybullet_simulator class
+        :param period: the time step between each new frame
+        :param q_t: the joint position trajectory, stored in a Curves object
+        :param dq_t: the joint velocity trajectory, stored in a Curves object
+        """
+        self.pyb_sim = pyb_sim
+        self.q_t = q_t
+        self.dq_t = dq_t
+        self.t = q_t.min()
+        self.t_max = q_t.max()
+        super().__init__(period)
+
+    def loop(self, signum, frame):
+        self.t += self.period
+        if self.t > self.t_max:
+            self.stop()
+
+        # Get position/orientation of the base and angular position of actuators
+        self.pyb_sim.retrieve_pyb_data()
+
+        # update camera position to follow the root position
+        camera_follow(self.pyb_sim.baseState[0])
+
+        # Set control for all joints
+        pyb.setJointMotorControlArray(self.pyb_sim.robotId,
+                                      self.pyb_sim.revoluteJointIndices,
+                                      controlMode=pyb.POSITION_CONTROL,
+                                      targetPositions=self.q_t(self.t)[7:],
+                                      targetVelocities=self.dq_t(self.t)[6:])
+
+        # Compute one step of simulation
+        pyb.stepSimulation()
+
+
+
+
+def camera_follow(root):
+    state = pyb.getDebugVisualizerCamera()
+    current_root = state[-1]
+    x = max(current_root[0], root[0])
+    y = current_root[1]
+    z = current_root[2]
+    pyb.resetDebugVisualizerCamera(cameraDistance=state[-2],
+                                   cameraYaw=state[-4],
+                                   cameraPitch=state[-3],
+                                   cameraTargetPosition=[x, y, z])
+
+
