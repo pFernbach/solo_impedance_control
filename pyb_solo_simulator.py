@@ -114,15 +114,18 @@ class SimulatorLoop(Loop):
     """
     Class used to call pybullet at a given frequency
     """
-    def __init__(self, pyb_sim, period, q_t, dq_t):
+    def __init__(self, pyb_sim, period, q_t, dq_t, display_func = None):
         """
         Constructor
         :param pyb_sim: instance of pybullet_simulator class
         :param period: the time step between each new frame
         :param q_t: the joint position trajectory, stored in a Curves object
         :param dq_t: the joint velocity trajectory, stored in a Curves object
+        :param display_func: function pointer, if provided this function is called
+        with the wholebody configuration (including free-flyer) after each simulation step
         """
         self.pyb_sim = pyb_sim
+        self.display_func = display_func
         self.q_t = q_t
         self.dq_t = dq_t
         self.t = q_t.min()
@@ -133,13 +136,6 @@ class SimulatorLoop(Loop):
         self.t += self.period
         if self.t > self.t_max:
             self.stop()
-
-        # Get position/orientation of the base and angular position of actuators
-        self.pyb_sim.retrieve_pyb_data()
-
-        # update camera position to follow the root position
-        camera_follow(self.pyb_sim.baseState[0])
-
         # Set control for all joints
         self.pyb_sim.pyb.setJointMotorControlArray(self.pyb_sim.robotId,
                                       self.pyb_sim.revoluteJointIndices,
@@ -147,10 +143,16 @@ class SimulatorLoop(Loop):
                                       targetPositions=self.q_t(self.t)[7:],
                                       targetVelocities=self.dq_t(self.t)[6:])
         # Compute one step of simulation
-        pyb.stepSimulation()
+        self.pyb_sim.pyb.stepSimulation()
+        
+        # Get position/orientation of the base and angular position of actuators
+        self.pyb_sim.retrieve_pyb_data()
+        # update camera position to follow the root position
+        self.pyb_sim.camera_follow(self.pyb_sim.baseState[0])
 
-
-
+        # display the motion with display_func if required:
+        if self.display_func is not None and self.pyb_sim.qmes12 is not None:
+            self.display_func(self.pyb_sim.qmes12.reshape(-1,1))
 
 
 
