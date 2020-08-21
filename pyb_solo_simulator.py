@@ -7,7 +7,7 @@ from example_robot_data.robots_loader import getModelPath
 from loop import Loop
 
 class pybullet_simulator:
-    def __init__(self, dt=0.001, q_init=None, root_init = None, env_name="plane.urdf", urdf_name="solo12.urdf", force_control=False):
+    def __init__(self, dt=0.001, q_init=None, root_init = None, env_name="plane.urdf", env_package = None, urdf_name="solo12.urdf", force_control=False):
 
         self.ENV_NAME = env_name
         self.ROBOT_URDF_NAME = urdf_name
@@ -23,8 +23,16 @@ class pybullet_simulator:
         # p.DIRECT for non-graphical version
 
         # Load horizontal plane
-        pyb.setAdditionalSearchPath(pybullet_data.getDataPath())
-        self.planeId = pyb.loadURDF(self.ENV_NAME)
+        if env_package is None:
+            self.pyb.setAdditionalSearchPath(pybullet_data.getDataPath())
+        else:
+            from rospkg import RosPack
+            rp = RosPack()
+            package_path = rp.get_path(env_package) + "/urdf/"
+            self.pyb.setAdditionalSearchPath(package_path)
+            print("Environment path : ", package_path)
+        print("Load environment urdf : ", self.ENV_NAME)
+        self.planeId = self.pyb.loadURDF(self.ENV_NAME)
 
         # Set the gravity
         pyb.setGravity(0, 0, -9.81)
