@@ -4,7 +4,7 @@ import time
 import argparse
 import curves
 from multicontact_api import ContactSequence
-from pyb_solo_simulator import pybullet_simulator, camera_follow, SimulatorLoop
+from pyb_solo_simulator import pybullet_simulator, SimulatorLoop
 
 
 DT = 0.002
