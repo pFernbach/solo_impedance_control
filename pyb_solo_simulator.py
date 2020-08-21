@@ -11,6 +11,7 @@ class pybullet_simulator:
         self.ENV_NAME = env_name
         self.ROBOT_URDF_NAME = urdf_name
         self.URDF_SUBPATH = "/solo_description/robots"
+        self.use_gui = use_gui
 
         self.q_init = q_init
         if self.q_init is None:
@@ -148,7 +149,8 @@ class SimulatorLoop(Loop):
         # Get position/orientation of the base and angular position of actuators
         self.pyb_sim.retrieve_pyb_data()
         # update camera position to follow the root position
-        self.pyb_sim.camera_follow(self.pyb_sim.baseState[0])
+        if self.pyb_sim.use_gui:
+            self.pyb_sim.camera_follow(self.pyb_sim.baseState[0])
 
         # display the motion with display_func if required:
         if self.display_func is not None and self.pyb_sim.qmes12 is not None:
