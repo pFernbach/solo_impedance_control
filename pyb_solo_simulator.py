@@ -96,6 +96,20 @@ class pybullet_simulator:
         return 0
 
 
+    def camera_follow(self, root):
+        state = self.pyb.getDebugVisualizerCamera()
+        current_root = state[-1]
+        x = max(current_root[0], root[0])
+        y = current_root[1]
+        z = current_root[2]
+        self.pyb.resetDebugVisualizerCamera(cameraDistance=state[-2],
+                                       cameraYaw=state[-4],
+                                       cameraPitch=state[-3],
+                                       cameraTargetPosition=[x, y, z])
+
+
+
+
 class SimulatorLoop(Loop):
     """
     Class used to call pybullet at a given frequency
@@ -138,15 +152,5 @@ class SimulatorLoop(Loop):
 
 
 
-def camera_follow(root):
-    state = pyb.getDebugVisualizerCamera()
-    current_root = state[-1]
-    x = max(current_root[0], root[0])
-    y = current_root[1]
-    z = current_root[2]
-    pyb.resetDebugVisualizerCamera(cameraDistance=state[-2],
-                                   cameraYaw=state[-4],
-                                   cameraPitch=state[-3],
-                                   cameraTargetPosition=[x, y, z])
 
 
