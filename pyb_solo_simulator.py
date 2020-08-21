@@ -6,7 +6,7 @@ from example_robot_data.robots_loader import getModelPath
 from .loop import Loop
 
 class pybullet_simulator:
-    def __init__(self, dt=0.001, q_init=None, root_init = None, env_name="plane.urdf", env_package = None, urdf_name="solo12.urdf", force_control=False):
+    def __init__(self, dt=0.001, q_init=None, root_init = None, env_name="plane.urdf", env_package = None, urdf_name="solo12.urdf", force_control=False, use_gui = True):
 
         self.ENV_NAME = env_name
         self.ROBOT_URDF_NAME = urdf_name
