@@ -4,7 +4,7 @@ import time
 import argparse
 import curves
 from multicontact_api import ContactSequence
-from pyb_solo_simulator import pybullet_simulator, SimulatorLoop
+from pyb_solo_simulator import pybullet_simulator, VelocityControlLoop
 
 
 DT = 0.002
@@ -52,7 +52,7 @@ if __name__ == "__main__":
     print("Press enter to start the motion")
     input()
     # Start the control loop:
-    SimulatorLoop(pyb_sim, DT, q_t, dq_t)
+    VelocityControlLoop(pyb_sim, DT, q_t, dq_t,)
 
     # compute final position error of the base
     root_final_desired = cs.contactPhases[-1].q_t(cs.contactPhases[-1].timeFinal)[:2]
